@@ -1,0 +1,850 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER
+// ============================================
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  password      String
+  name          String
+  username      String?    @unique
+  avatarUrl     String?
+  bio           String?    @db.Text
+  systemRole    SystemRole @default(USER)
+  status        UserStatus @default(ACTIVE)
+  emailVerified Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  ownedWorlds       WorldMember[]
+  createdWorlds     World[]
+  ownedManuscripts  Manuscript[]
+  manuscriptMembers ManuscriptMember[]
+  notifications     Notification[]
+  activityLog       ActivityLog[]
+  reviews           Review[]           @relation("ReviewReviewer")
+  refreshTokens     RefreshToken[]
+  tasksAssigned     Task[]             @relation("TaskAssignee")
+  tasksCreated      Task[]             @relation("TaskCreator")
+  taskComments      TaskComment[]
+}
+
+enum SystemRole {
+  GRAN_ESCRIBA
+  ARCHIVERO
+  CURADOR
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// ============================================
+// WORLD
+// ============================================
+model World {
+  id            String          @id @default(uuid())
+  name          String
+  description   String?         @db.Text
+  coverImage    String?
+  visibility    WorldVisibility @default(PRIVATE)
+  shareToken    String?         @unique
+  sharePassword String?
+  createdBy     String
+  creator       User            @relation(fields: [createdBy], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  bestiary     BestiaryEntry[]
+  characters   Character[]
+  events       TimelineEvent[]
+  continents   Continent[]
+  seas         Sea[]
+  regions      Region[]
+  nations      Nation[]
+  magicSystems MagicSystem[]
+  spells       Spell[]
+  laws         Law[]
+  maps         Map[]
+  manuscripts  Manuscript[]
+  members      WorldMember[]
+  stats        WorldStats?
+  heraldry     HeraldryItem[]
+}
+
+enum WorldVisibility {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+}
+
+model WorldMember {
+  id       String    @id @default(uuid())
+  worldId  String
+  userId   String
+  role     WorldRole @default(VIEWER)
+  world    World     @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime  @default(now())
+
+  @@unique([worldId, userId])
+}
+
+enum WorldRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// ============================================
+// MANUSCRIPT
+// ============================================
+model Manuscript {
+  id                String               @id @default(uuid())
+  worldId           String
+  world             World                @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  title             String
+  subtitle          String?
+  author            String?
+  genre             String?
+  coverImage        String?
+  synopsis          String?              @db.Text
+  visibility        ManuscriptVisibility @default(PRIVATE)
+  shareToken        String?              @unique
+  sharePassword     String?
+  status            ManuscriptStatus     @default(BORRADOR)
+  wordCount         Int                  @default(0)
+  readTimeMinutes   Int                  @default(0)
+  viewCount         Int                  @default(0)
+  rating            Float?               @default(0)
+  order             Int                  @default(0)
+  publishedAt       DateTime?
+  startDate         DateTime?
+  targetEndDate     DateTime?
+  completionPct     Float                @default(0)
+  totalChapters     Int                  @default(0)
+  publishedChapters Int                  @default(0)
+  createdBy         String
+  creator           User                 @relation(fields: [createdBy], references: [id])
+  chapters          Chapter[]
+  members           ManuscriptMember[]
+  tasks             Task[]
+  milestones        Milestone[]
+  sprints           Sprint[]
+  reviews           Review[]
+  activityFeed      ProjectActivity[]
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+}
+
+enum ManuscriptVisibility {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+}
+
+enum ManuscriptStatus {
+  BORRADOR
+  EN_REVISION
+  PUBLICADO
+  ARCHIVADO
+}
+
+model ManuscriptMember {
+  id               String         @id @default(uuid())
+  manuscriptId     String
+  manuscript       Manuscript     @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role             ManuscriptRole
+  notifyOnTasks    Boolean        @default(true)
+  notifyOnChapters Boolean        @default(true)
+  notifyOnReviews  Boolean        @default(true)
+  joinedAt         DateTime       @default(now())
+
+  @@unique([manuscriptId, userId])
+}
+
+enum ManuscriptRole {
+  ESCRITOR
+  EDITOR_TEXTO
+  EDITOR_VISUAL
+  DISENADOR
+  MAQUETADOR
+  PUBLICADOR
+  REVISOR
+}
+
+// ============================================
+// CHAPTER
+// ============================================
+model Chapter {
+  id               String        @id @default(uuid())
+  manuscriptId     String
+  manuscript       Manuscript    @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  number           Int
+  title            String
+  genre            String?
+  epigraph         String?
+  content          String        @db.Text
+  coverImageUrl    String?
+  wordCount        Int           @default(0)
+  status           ChapterStatus @default(BORRADOR)
+  isPublished      Boolean       @default(false)
+  publishedAt      DateTime?
+  scheduledAt      DateTime?
+  version          Int           @default(1)
+  publishedVersion Int?
+  order            Int
+  vectorId         String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  characters ChapterCharacter[]
+  events     TimelineEvent[]
+  tasks      Task[]
+}
+
+enum ChapterStatus {
+  BORRADOR
+  IN_REVIEW
+  REVIEWED
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+model ChapterCharacter {
+  id          String    @id @default(uuid())
+  chapterId   String
+  characterId String
+  chapter     Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([chapterId, characterId])
+}
+
+// ============================================
+// TASK MANAGEMENT
+// ============================================
+model Task {
+  id             String       @id @default(uuid())
+  manuscriptId   String
+  manuscript     Manuscript   @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?      @db.Text
+  type           TaskType     @default(TASK)
+  priority       TaskPriority @default(MEDIA)
+  status         TaskStatus   @default(TODO)
+  dueDate        DateTime?
+  startDate      DateTime?
+  estimatedHours Float?
+  actualHours    Float?
+  order          Int          @default(0)
+  assigneeId     String?
+  assignee       User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creatorId      String
+  creator        User         @relation("TaskCreator", fields: [creatorId], references: [id])
+  sprintId       String?
+  sprint         Sprint?      @relation(fields: [sprintId], references: [id])
+  chapterId      String?
+  chapter        Chapter?     @relation(fields: [chapterId], references: [id])
+  tags           String?
+  completedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  parentTaskId String?
+  parentTask   Task?            @relation("TaskHierarchy", fields: [parentTaskId], references: [id])
+  children     Task[]           @relation("TaskHierarchy")
+  comments     TaskComment[]
+  attachments  TaskAttachment[]
+}
+
+enum TaskType {
+  TASK
+  BUG
+  FEATURE
+  REVIEW
+  CHAPTER
+  MILESTONE_TASK
+}
+
+enum TaskPriority {
+  CRITICA
+  ALTA
+  MEDIA
+  BAJA
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  BLOCKED
+  DONE
+  ARCHIVED
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model TaskAttachment {
+  id         String   @id @default(uuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileUrl    String
+  fileSize   Int?
+  uploadedBy String
+  createdAt  DateTime @default(now())
+}
+
+// ============================================
+// SPRINT
+// ============================================
+model Sprint {
+  id           String       @id @default(uuid())
+  manuscriptId String
+  manuscript   Manuscript   @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  status       SprintStatus @default(PLANNED)
+  goal         String?
+  tasks        Task[]
+  createdAt    DateTime     @default(now())
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================
+// MILESTONE
+// ============================================
+model Milestone {
+  id           String          @id @default(uuid())
+  manuscriptId String
+  manuscript   Manuscript      @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  dueDate      DateTime
+  status       MilestoneStatus @default(PENDING)
+  type         MilestoneType   @default(CUSTOM)
+  completedAt  DateTime?
+  createdAt    DateTime        @default(now())
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  ACHIEVED
+  MISSED
+}
+
+enum MilestoneType {
+  PROJECT_START
+  FIRST_DRAFT
+  EDITORIAL_REVIEW
+  FINAL_REVIEW
+  PUBLICATION
+  CUSTOM
+}
+
+// ============================================
+// BESTIARY
+// ============================================
+model BestiaryEntry {
+  id              String      @id @default(uuid())
+  worldId         String
+  world           World       @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name            String
+  species         EntityType  @default(ANIMAL)
+  dangerLevel     DangerLevel @default(INOFENSIVA)
+  habitat         String?
+  diet            String?
+  description     String      @db.Text
+  folklore        String?     @db.Text
+  regionId        String?
+  region          Region?     @relation(fields: [regionId], references: [id])
+  images          Image[]
+  characteristics Json?
+  vectorId        String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  characters CharacterCreature[]
+  events     EventRelation[]
+  spells     Spell[]
+}
+
+enum EntityType {
+  PLANTA
+  HONGO
+  ANIMAL
+  CRIATURA_MITICA
+  ENTIDAD
+}
+
+enum DangerLevel {
+  INOFENSIVA
+  BAJA
+  MEDIA
+  ALTA
+  MORTAL
+}
+
+// ============================================
+// CHARACTERS
+// ============================================
+model Character {
+  id         String   @id @default(uuid())
+  worldId    String
+  world      World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name       String
+  title      String?
+  biography  String   @db.Text
+  psychology String?  @db.Text
+  origin     String?
+  role       String?
+  nationId   String?
+  nation     Nation?  @relation(fields: [nationId], references: [id])
+  regionId   String?
+  region     Region?  @relation(fields: [regionId], references: [id])
+  images     Image[]
+  vectorId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  creatures CharacterCreature[]
+  events    EventRelation[]
+  spells    Spell[]
+  chapters  ChapterCharacter[]
+  heraldry  HeraldryLink[]
+}
+
+model CharacterCreature {
+  id          String        @id @default(uuid())
+  characterId String
+  creatureId  String
+  relation    String
+  character   Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  creature    BestiaryEntry @relation(fields: [creatureId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, creatureId])
+}
+
+// ============================================
+// TIMELINE
+// ============================================
+model TimelineEvent {
+  id          String   @id @default(uuid())
+  worldId     String
+  world       World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @db.Text
+  dateInWorld String
+  era         Era      @default(EDAD_ANTIGUA)
+  importance  Int      @default(1)
+  vectorId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  relations EventRelation[]
+  chapters  Chapter[]
+}
+
+model EventRelation {
+  id              String         @id @default(uuid())
+  eventId         String
+  targetId        String
+  targetType      String
+  event           TimelineEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  BestiaryEntry   BestiaryEntry? @relation(fields: [bestiaryEntryId], references: [id])
+  bestiaryEntryId String?
+  Character       Character?     @relation(fields: [characterId], references: [id])
+  characterId     String?
+  Nation          Nation?        @relation(fields: [nationId], references: [id])
+  nationId        String?
+}
+
+enum Era {
+  PREHISTORIA
+  EDAD_ANTIGUA
+  EDAD_MEDIA
+  EDAD_MODERNA
+  ERA_FUTURA
+  ERA_DE_LA_GUERRA
+  ERA_DE_LA_RECONSTRUCCION
+  ERA_ACTUAL
+}
+
+// ============================================
+// GEOGRAPHY
+// ============================================
+model Continent {
+  id                 String   @id @default(uuid())
+  worldId            String
+  world              World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name               String
+  description        String?  @db.Text
+  climate            String?
+  geopoliticalWeight Int      @default(1)
+  regions            Region[]
+  maps               Map[]
+  nations            NationContinent[]
+}
+
+model Sea {
+  id          String  @id @default(uuid())
+  worldId     String
+  world       World   @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name        String
+  description String? @db.Text
+  tradeRoutes String? @db.Text
+  maps        Map[]
+}
+
+model Region {
+  id          String          @id @default(uuid())
+  worldId     String
+  world       World           @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name        String
+  description String?         @db.Text
+  climate     String?
+  continentId String
+  continent   Continent       @relation(fields: [continentId], references: [id], onDelete: Cascade)
+  creatures   BestiaryEntry[]
+  characters  Character[]
+  nations     Nation[]
+}
+
+model Map {
+  id               String     @id @default(uuid())
+  worldId          String
+  world            World      @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name             String
+  era              Era
+  imageUrl         String
+  layers           Json?
+  continentId      String?
+  continent        Continent? @relation(fields: [continentId], references: [id])
+  seaId            String?
+  sea              Sea?       @relation(fields: [seaId], references: [id])
+  pointsOfInterest Json?
+}
+
+// ============================================
+// NATIONS
+// ============================================
+model Nation {
+  id            String          @id @default(uuid())
+  worldId       String
+  world         World           @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name          String
+  motto         String?
+  government    String?
+  population    Int?
+  militaryPower Int?            @default(1)
+  culture       String?         @db.Text
+  coatOfArmsUrl String?
+  regionId      String?
+  region        Region?         @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  characters    Character[]
+  laws          Law[]
+  events        EventRelation[]
+  continents    NationContinent[]
+  heraldry      HeraldryLink[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model NationContinent {
+  id          String    @id @default(uuid())
+  nationId    String
+  continentId String
+  nation      Nation    @relation(fields: [nationId], references: [id], onDelete: Cascade)
+  continent   Continent @relation(fields: [continentId], references: [id], onDelete: Cascade)
+
+  @@unique([nationId, continentId])
+}
+
+// ============================================
+// HERALDRY (coats of arms & national symbols)
+// ============================================
+model HeraldryItem {
+  id          String        @id @default(uuid())
+  worldId     String
+  world       World         @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name        String
+  description String?       @db.Text
+  composition Json
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  links       HeraldryLink[]
+}
+
+model HeraldryLink {
+  id          String       @id @default(uuid())
+  heraldryId  String
+  heraldry    HeraldryItem @relation(fields: [heraldryId], references: [id], onDelete: Cascade)
+  nationId    String?
+  nation      Nation?      @relation(fields: [nationId], references: [id], onDelete: Cascade)
+  characterId String?
+  character   Character?   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// LAWS
+// ============================================
+model Law {
+  id            String      @id @default(uuid())
+  worldId       String
+  world         World       @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  title         String
+  content       String      @db.Text
+  severity      LawSeverity @default(GRACIA_LEVE)
+  status        LawStatus   @default(VIGENTE)
+  nationId      String
+  nation        Nation      @relation(fields: [nationId], references: [id], onDelete: Cascade)
+  affectedCaste Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum LawSeverity {
+  GRACIA_LEVE
+  ADVERTENCIA
+  MULTA
+  JUSTICIA_MEDIA
+  JUSTICIA_DRACONIANA
+}
+
+enum LawStatus {
+  VIGENTE
+  REVOCADA
+  EN_REVISION
+}
+
+// ============================================
+// MAGIC
+// ============================================
+model MagicSystem {
+  id          String      @id @default(uuid())
+  worldId     String
+  world       World       @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name        String
+  school      MagicSchool
+  description String?     @db.Text
+  powerSource String?
+  laws        Json?
+  visual      Json?
+  spells      Spell[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Spell {
+  id             String          @id @default(uuid())
+  worldId        String
+  world          World           @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  name           String
+  description    String          @db.Text
+  powerLevel     Int             @default(1)
+  cost           String?
+  systemId       String
+  system         MagicSystem     @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  practitionerId String?
+  practitioner   Character?      @relation(fields: [practitionerId], references: [id])
+  creatures      BestiaryEntry[]
+  vectorId       String?
+  visual         Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+enum MagicSchool {
+  ELEMENTAL
+  NECROMANCIA
+  INVOCACION
+  ILUSIONISMO
+  ALTERACION
+  CONJURACION
+  ARCANA_PURA
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  read      Boolean          @default(false)
+  actionUrl String?
+  entity    String?
+  entityId  String?
+  createdAt DateTime         @default(now())
+}
+
+enum NotificationType {
+  SYSTEM
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TASK_STATUS_CHANGED
+  TASK_COMMENT
+  TASK_MENTION
+  CHAPTER_PUBLISHED
+  CHAPTER_REVIEW_REQUEST
+  CHAPTER_REVIEW_COMPLETED
+  CHAPTER_SCHEDULED
+  MILESTONE_ACHIEVED
+  SPRINT_STARTED
+  SPRINT_COMPLETED
+  TEAM_MEMBER_ADDED
+  TEAM_MEMBER_REMOVED
+  DEADLINE_REMINDER
+  DEADLINE_OVERDUE
+}
+
+// ============================================
+// REVIEWS
+// ============================================
+model Review {
+  id             String       @id @default(uuid())
+  manuscriptId   String
+  manuscript     Manuscript   @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  chapterId      String?
+  reviewerId     String
+  reviewer       User         @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  content        String       @db.Text
+  highlightRange Json?
+  type           ReviewType   @default(MARGEN)
+  status         ReviewStatus @default(PENDIENTE)
+  createdAt      DateTime     @default(now())
+}
+
+enum ReviewType {
+  MARGEN
+  TINTA
+  CORRECCION
+}
+
+enum ReviewStatus {
+  PENDIENTE
+  ACEPTADA
+  RECHAZADA
+}
+
+// ============================================
+// PROJECT ACTIVITY
+// ============================================
+model ProjectActivity {
+  id           String     @id @default(uuid())
+  manuscriptId String
+  manuscript   Manuscript @relation(fields: [manuscriptId], references: [id], onDelete: Cascade)
+  userId       String
+  action       String
+  entity       String
+  entityId     String
+  details      Json?
+  createdAt    DateTime   @default(now())
+}
+
+// ============================================
+// STATS
+// ============================================
+model WorldStats {
+  id              String    @id @default(uuid())
+  worldId         String    @unique
+  world           World     @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  totalWords      Int       @default(0)
+  totalChapters   Int       @default(0)
+  totalCharacters Int       @default(0)
+  totalCreatures  Int       @default(0)
+  totalEvents     Int       @default(0)
+  completionPct   Float     @default(0)
+  lastActivityAt  DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+// ============================================
+// TEMPLATE
+// ============================================
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  schema      Json
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// IMAGE
+// ============================================
+model Image {
+  id          String         @id @default(uuid())
+  url         String
+  alt         String?
+  caption     String?
+  order       Int            @default(0)
+  creatureId  String?
+  creature    BestiaryEntry? @relation(fields: [creatureId], references: [id], onDelete: Cascade)
+  characterId String?
+  character   Character?     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// ACTIVITY LOG
+// ============================================
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String
+  entityId  String
+  worldId   String?
+  details   Json?
+  createdAt DateTime @default(now())
+}

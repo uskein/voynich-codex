@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* Theme-specific color variables */
+:root, [data-theme="dark"] {
+  --bg-primary: #1a1e2e;
+  --bg-secondary: #232840;
+  --bg-tertiary: #2e3445;
+  --text-primary: #f0f1f4;
+  --text-secondary: #b5bcc9;
+  --border-color: #383f53;
+}
+
+[data-theme="light"] {
+  --bg-primary: #fefdfb;
+  --bg-secondary: #fdf9f0;
+  --bg-tertiary: #f5ead4;
+  --text-primary: #1a1a1a;
+  --text-secondary: #5c5c5c;
+  --border-color: #e0e0e0;
+}
+
+[data-theme="sepia"] {
+  --bg-primary: #f5ead4;
+  --bg-secondary: #e8d5b0;
+  --bg-tertiary: #d4b87a;
+  --text-primary: #383838;
+  --text-secondary: #5c5c5c;
+  --border-color: #c9a85c;
+}
+
+@theme {
+  --color-parchment-50: #fefdfb;
+  --color-parchment-100: #fdf9f0;
+  --color-parchment-200: #f5ead4;
+  --color-parchment-300: #e8d5b0;
+  --color-parchment-400: #d4b87a;
+  --color-parchment-500: #c9a85c;
+  --color-parchment-600: #b89240;
+  --color-parchment-700: #9a7a34;
+  --color-parchment-800: #7d6330;
+  --color-parchment-900: #66522b;
+
+  --color-burnt-50: #fdf6ee;
+  --color-burnt-100: #f9e6d0;
+  --color-burnt-200: #f2c99a;
+  --color-burnt-300: #e9a55e;
+  --color-burnt-400: #e28a35;
+  --color-burnt-500: #d97216;
+  --color-burnt-600: #c45a0f;
+  --color-burnt-700: #a34310;
+  --color-burnt-800: #853614;
+  --color-burnt-900: #6e2d14;
+
+  --color-midnight-50: #f0f1f4;
+  --color-midnight-100: #d8dce4;
+  --color-midnight-200: #b5bcc9;
+  --color-midnight-300: #8d97ab;
+  --color-midnight-400: #6b7690;
+  --color-midnight-500: #545e78;
+  --color-midnight-600: #434c63;
+  --color-midnight-700: #383f53;
+  --color-midnight-800: #2e3445;
+  --color-midnight-900: #1a1e2e;
+
+  --color-ink-50: #f3f3f3;
+  --color-ink-100: #e0e0e0;
+  --color-ink-200: #c2c2c2;
+  --color-ink-300: #9e9e9e;
+  --color-ink-400: #7a7a7a;
+  --color-ink-500: #5c5c5c;
+  --color-ink-600: #454545;
+  --color-ink-700: #383838;
+  --color-ink-800: #2a2a2a;
+  --color-ink-900: #1a1a1a;
+
+  --color-gold-400: #d4af37;
+  --color-gold-500: #c9a036;
+  --color-gold-600: #a68329;
+
+  --font-serif: 'Noto Serif', 'Georgia', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Apply theme to main containers */
+#root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #545e78;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #434c63;
+}
