@@ -98,12 +98,19 @@ voynich-codex/
 
 ### 📖 World Building
 - 🌍 **Worlds** — Crea y gestiona mundos ficticios
-- 🐉 **Bestiary** — Bestiario completo por mundo
-- 👥 **Characters** — Personajes con relaciones y backstory
+- 🐉 **Bestiary** — Bestiario completo por mundo con simulador de encuentros y grafo de regiones
+- 👥 **Characters** — Personajes con relaciones, backstory y grafo de naciones
 - 📅 **Timeline** — Línea de tiempo del mundo
-- 🗺️ **Geography** — Mapas y ubicaciones
+- 🗺️ **Geography** — Mapas, continentes y mares con simuladores visuales interactivos
 - ⚔️ **Nations** — Naciones, culturas y política
-- 🔮 **Magic Systems** — Sistemas de magia personalizados
+- 🔮 **Magic Systems** — Sistemas de magia con editor visual de emblemas
+
+### 🎨 Visual Simulators
+- 🌊 **SeaSimulator** — Escenas de mar animadas con 6 tonalidades (Océano, Ártico, Tropical, Volcánico, Abismo, Místico)
+- 🏔️ **ContinentSimulator** — Paisajes de continentes con 6 tonalidades (Selva, Desierto, Ártico, Volcánico, Oceánico, Flotante)
+- 🗺️ **MapSimulator** — Mapas con filtros de tono, capas de terreno, puntos de interés y relieves
+- 🛠️ **MapCreator** — Editor interactivo de mapas con herramientas de dibujo de polígonos, colocación de POIs y relieves
+- 📊 **Graph Views** — Visualización de grafos con ReactFlow para bestiario, personajes, geografía y magia
 
 ### 📝 Manuscript Management
 - 📚 **Manuscripts** — Biblioteca de manuscritos

@@ -332,7 +332,6 @@ function MagicFlow() {
             label: spell.name,
             power: spell.powerLevel,
             color: schoolColors[sys.school] || '#8d97ab',
-            selected: selectedId === spell.id,
             visual: spell.visual
           }
         });
@@ -367,7 +366,7 @@ function MagicFlow() {
       });
     });
     return { nodes, edges };
-  }, [visibleSystems, spells, characters, selectedId, reduceMotion]);
+  }, [visibleSystems, spells, characters, reduceMotion]);
 
   const flow = useDraggableNodes(nodes);
 

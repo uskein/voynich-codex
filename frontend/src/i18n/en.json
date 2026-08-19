@@ -159,6 +159,9 @@
     "era": "Era",
     "imageUrl": "Image URL",
     "imageUrlPlaceholder": "https://example.com/map.jpg",
+    "image": "Image",
+    "uploadImage": "Upload image",
+    "imageHint": "Paste a URL or upload an image from your device",
     "continent": "Continent (optional)",
     "sea": "Sea (optional)",
     "none": "None",
@@ -167,7 +170,15 @@
     "modernAge": "Modern Age",
     "futureEra": "Future Era",
     "regions": "regions",
-    "mapsCount": "maps"
+    "mapsCount": "maps",
+    "seaTone": "Sea Tone",
+    "seaToneHint": "Control the visual appearance of the sea",
+    "continentTone": "Continent Tone",
+    "continentToneHint": "Control the visual appearance of the continent",
+    "mapTone": "Map Tone",
+    "mapToneHint": "Control the visual appearance of the map",
+    "mapCreator": "Map Creator",
+    "mapNeedsContent": "Add an image URL, layers, points of interest, or reliefs to the map"
   },
   "characters": {
     "title": "Characters",
@@ -201,7 +212,8 @@
     "noResults": "No manuscripts found",
     "noResultsDesc": "Try adjusting your search or filters",
     "all": "All",
-    "rating": "Rating"
+    "rating": "Rating",
+    "selectItem": "Select an item from the graph to see its details"
   },
   "simulators": {
     "play": "Play",
@@ -213,6 +225,21 @@
       "danger": "Danger level",
       "dangerValue": "Level {level} / 4",
       "diet": "Diet"
+    },
+    "sea": {
+      "unnamed": "Unnamed Sea",
+      "preview": "Sea Preview",
+      "previewHint": "Watch your sea take shape as you fill in the fields. The scene reacts in real-time to the name and description."
+    },
+    "continent": {
+      "unnamed": "Unnamed Continent",
+      "preview": "Continent Preview",
+      "previewHint": "Watch your continent take shape as you fill in the fields. The scene reacts in real-time to name, climate, and tone."
+    },
+    "map": {
+      "unnamed": "Unnamed Map",
+      "preview": "Map Preview",
+      "previewHint": "Watch your map take shape as you add layers, points of interest, and reliefs."
     },
     "timeline": {
       "title": "Timeline",
@@ -430,6 +457,42 @@
       "imageUrlPlaceholder": "or paste image URL",
       "imageAltPlaceholder": "alt text"
     }
+  },
+  "mapCreator": {
+    "select": "Select",
+    "poi": "Point of Interest",
+    "relief": "Relief",
+    "layer": "Layer",
+    "delete": "Delete",
+    "clear": "Clear All",
+    "poiNamePlaceholder": "Point name...",
+    "clickToPlace": "Click on the map to place the point of interest",
+    "clickToPlaceRelief": "Click on the map to place the relief",
+    "startDrawing": "Start Drawing",
+    "finishDrawing": "Finish",
+    "cancel": "Cancel",
+    "layerHint": "Start drawing and click on the map to add points. Close the polygon to finish.",
+    "selectHint": "Click on an element to select it",
+    "layersCount": "layers",
+    "poisCount": "points",
+    "reliefsCount": "reliefs"
+  },
+  "mapLegend": {
+    "terrain": "Terrain",
+    "water": "Water",
+    "forest": "Forest",
+    "mountain": "Mountains",
+    "desert": "Desert",
+    "tundra": "Tundra",
+    "swamp": "Swamp",
+    "plains": "Plains",
+    "jungle": "Jungle",
+    "hill": "Hill",
+    "river": "River",
+    "lake": "Lake",
+    "volcano": "Volcano",
+    "canyon": "Canyon",
+    "plateau": "Plateau"
   },
   "common": {
     "loading": "Loading...",

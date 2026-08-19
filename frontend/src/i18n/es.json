@@ -159,6 +159,9 @@
     "era": "Era",
     "imageUrl": "URL de la Imagen",
     "imageUrlPlaceholder": "https://ejemplo.com/mapa.jpg",
+    "image": "Imagen",
+    "uploadImage": "Subir imagen",
+    "imageHint": "Pega una URL o sube una imagen desde tu dispositivo",
     "continent": "Continente (opcional)",
     "sea": "Mar (opcional)",
     "none": "Ninguno",
@@ -167,7 +170,15 @@
     "modernAge": "Era Moderna",
     "futureEra": "Era Futura",
     "regions": "regiones",
-    "mapsCount": "mapas"
+    "mapsCount": "mapas",
+    "seaTone": "Tonalidad del Mar",
+    "seaToneHint": "Controla la apariencia visual del mar",
+    "continentTone": "Tonalidad del Continente",
+    "continentToneHint": "Controla la apariencia visual del continente",
+    "mapTone": "Tonalidad del Mapa",
+    "mapToneHint": "Controla la apariencia visual del mapa",
+    "mapCreator": "Creador de Mapas",
+    "mapNeedsContent": "Agrega una imagen URL, capas, puntos de interes o relieves al mapa"
   },
   "characters": {
     "title": "Personajes",
@@ -201,7 +212,8 @@
     "noResults": "No se encontraron manuscritos",
     "noResultsDesc": "Intenta ajustar tu búsqueda o filtros",
     "all": "Todos",
-    "rating": "Valoración"
+    "rating": "Valoración",
+    "selectItem": "Selecciona un elemento del grafo para ver sus detalles"
   },
   "simulators": {
     "play": "Reproducir",
@@ -213,6 +225,21 @@
       "danger": "Nivel de peligro",
       "dangerValue": "Nivel {level} / 4",
       "diet": "Dieta"
+    },
+    "sea": {
+      "unnamed": "Mar Sin Nombre",
+      "preview": "Vista previa del mar",
+      "previewHint": "Observa cómo tu mar toma forma mientras completas los campos. La escena reacciona en tiempo real al nombre y la descripción."
+    },
+    "continent": {
+      "unnamed": "Continente Sin Nombre",
+      "preview": "Vista previa del continente",
+      "previewHint": "Observa cómo tu continente toma forma mientras completas los campos. La escena reacciona en tiempo real al nombre, clima y tonalidad."
+    },
+    "map": {
+      "unnamed": "Mapa Sin Nombre",
+      "preview": "Vista previa del mapa",
+      "previewHint": "Observa cómo tu mapa toma forma mientras agregas capas, puntos de interes y relieves."
     },
     "timeline": {
       "title": "Línea de Tiempo",
@@ -430,6 +457,42 @@
       "imageUrlPlaceholder": "o pega la URL de la imagen",
       "imageAltPlaceholder": "texto alternativo"
     }
+  },
+  "mapCreator": {
+    "select": "Seleccionar",
+    "poi": "Punto de interes",
+    "relief": "Relieve",
+    "layer": "Capa",
+    "delete": "Eliminar",
+    "clear": "Limpiar todo",
+    "poiNamePlaceholder": "Nombre del punto...",
+    "clickToPlace": "Haz clic en el mapa para colocar el punto de interes",
+    "clickToPlaceRelief": "Haz clic en el mapa para colocar el relieve",
+    "startDrawing": "Iniciar dibujo",
+    "finishDrawing": "Finalizar",
+    "cancel": "Cancelar",
+    "layerHint": "Inicia el dibujo y haz clic en el mapa para agregar puntos. Cierra el poligono para finalizar.",
+    "selectHint": "Haz clic en un elemento para seleccionarlo",
+    "layersCount": "capas",
+    "poisCount": "puntos",
+    "reliefsCount": "relieves"
+  },
+  "mapLegend": {
+    "terrain": "Terreno",
+    "water": "Agua",
+    "forest": "Bosque",
+    "mountain": "Montanas",
+    "desert": "Desierto",
+    "tundra": "Tundra",
+    "swamp": "Pantano",
+    "plains": "Llanuras",
+    "jungle": "Jungla",
+    "hill": "Colina",
+    "river": "Rio",
+    "lake": "Lago",
+    "volcano": "Volcan",
+    "canyon": "Canion",
+    "plateau": "Meseta"
   },
   "common": {
     "loading": "Cargando...",

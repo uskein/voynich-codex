@@ -330,8 +330,7 @@ function CharactersFlow() {
             subtitle: ch.region?.name || ch.role || undefined,
             initial: ch.name.charAt(0).toUpperCase(),
             image: ch.images?.[0]?.url,
-            color,
-            selected: selectedId === ch.id
+            color
           }
         });
         edges.push({
@@ -345,7 +344,7 @@ function CharactersFlow() {
       });
     });
     return { nodes, edges };
-  }, [filteredCharacters, nations, selectedId, reduceMotion]);
+  }, [filteredCharacters, nations, reduceMotion]);
 
   const selected = useMemo(() => {
     if (!selectedId) return null;

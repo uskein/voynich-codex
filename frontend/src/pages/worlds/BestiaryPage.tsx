@@ -328,8 +328,7 @@ function BestiaryContent() {
             initial: ch.name.charAt(0).toUpperCase(),
             image: ch.images?.[0]?.url || ch.imageUrl,
             danger: ch.dangerLevel,
-            color,
-            selected: selectedCreatureId === ch.id
+            color
           }
         });
         edges.push({
@@ -343,7 +342,7 @@ function BestiaryContent() {
       });
     });
     return { nodes, edges };
-  }, [filteredCreatures, regions, selectedCreatureId, reduceMotion, t]);
+  }, [filteredCreatures, regions, reduceMotion, t]);
 
   const selectedCreature = useMemo(() => {
     if (!selectedCreatureId) return null;

@@ -16,6 +16,7 @@ const continentSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   climate: z.string().optional(),
+  tone: z.string().optional(),
   geopoliticalWeight: z.number().optional()
 });
 
@@ -87,7 +88,8 @@ const seaSchema = z.object({
   worldId: z.string().uuid(),
   name: z.string().min(1),
   description: z.string().optional(),
-  tradeRoutes: z.string().optional()
+  tradeRoutes: z.string().optional(),
+  tone: z.string().optional()
 });
 
 router.post('/seas', async (req: Request, res: Response) => {

@@ -524,6 +524,7 @@ model Continent {
   name               String
   description        String?  @db.Text
   climate            String?
+  tone               String?  @default("forest")
   geopoliticalWeight Int      @default(1)
   regions            Region[]
   maps               Map[]
@@ -537,6 +538,7 @@ model Sea {
   name        String
   description String? @db.Text
   tradeRoutes String? @db.Text
+  tone        String? @default("ocean")
   maps        Map[]
 }
 
