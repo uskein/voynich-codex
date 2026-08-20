@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { prisma } from '../../index';
+import prisma from '../../infrastructure/database/prisma/client';
 import { authenticate } from '../middlewares/auth.middleware';
 import { AppError } from '../middlewares/errorHandler';
 import { deleteVectorsByWorld } from '../../infrastructure/vector/qdrant.service';

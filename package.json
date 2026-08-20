@@ -13,8 +13,12 @@
     "build:frontend": "cd frontend && npm run build",
     "db:push": "cd backend && npx prisma db push",
     "db:seed": "cd backend && npx prisma db seed",
+    "db:migrate": "cd backend && npx prisma migrate dev",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "test": "cd backend && npm test",
+    "start:cross": "node scripts/start.js",
+    "stop:cross": "node scripts/stop.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

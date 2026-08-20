@@ -183,3 +183,5 @@ export function WorldDetailPage() {
     </div>
   );
 }
+
+export default WorldDetailPage;

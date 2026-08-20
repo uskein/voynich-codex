@@ -200,3 +200,5 @@ function Globe(props: any) {
     </svg>
   );
 }
+
+export default MyManuscriptsPage;

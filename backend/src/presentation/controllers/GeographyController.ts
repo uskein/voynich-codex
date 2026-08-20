@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../index';
+import prisma from '../../infrastructure/database/prisma/client';
 import { authenticate } from '../middlewares/auth.middleware';
 import { requireWorldMember } from '../middlewares/access';
 import { AppError } from '../middlewares/errorHandler';
@@ -116,6 +116,32 @@ router.get('/seas/world/:worldId', async (req: Request, res: Response) => {
       }
     });
     res.json({ seas });
+  } catch (error) {
+    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.put('/seas/:id', async (req: Request, res: Response) => {
+  try {
+    const sea = await prisma.sea.findUnique({ where: { id: req.params.id }, select: { worldId: true } });
+    if (!sea) throw new AppError(404, 'Sea not found');
+    await requireWorldMember(sea.worldId, req.userId);
+    const updated = await prisma.sea.update({ where: { id: req.params.id }, data: req.body });
+    res.json({ sea: updated });
+  } catch (error) {
+    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/seas/:id', async (req: Request, res: Response) => {
+  try {
+    const sea = await prisma.sea.findUnique({ where: { id: req.params.id }, select: { worldId: true } });
+    if (!sea) throw new AppError(404, 'Sea not found');
+    await requireWorldMember(sea.worldId, req.userId);
+    await prisma.sea.delete({ where: { id: req.params.id } });
+    res.json({ message: 'Deleted' });
   } catch (error) {
     if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
     res.status(500).json({ error: 'Internal server error' });

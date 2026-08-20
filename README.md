@@ -76,19 +76,25 @@ voynich-codex/
 │   └── src/
 ├── backend/               # Express API (Clean Architecture)
 │   ├── prisma/            # Database schema & migrations
+│   ├── uploads/           # Uploaded images (cover files)
 │   └── src/
+│       ├── __tests__/     # Unit tests (Vitest)
 │       ├── domain/        # Entities, value objects, interfaces
 │       ├── application/   # Use cases, DTOs
 │       ├── infrastructure/# Database, external services
 │       └── presentation/  # Controllers, middlewares, routes
 ├── frontend/              # React + Vite + TypeScript
 │   └── src/
-│       ├── components/    # Reusable UI components
+│       ├── components/
+│       │   ├── ui/        # Reusable UI (Modal, Select, Badge, Toast, etc.)
+│       │   ├── layout/    # Layout & Sidebar
+│       │   └── projects/  # Calendar, Gantt, Kanban components
 │       ├── pages/         # Route pages
 │       ├── stores/        # Zustand state management
 │       └── services/      # API client
 ├── docker/                # Docker configs & init scripts
 ├── docker-compose.yml     # PostgreSQL + Qdrant + n8n
+├── scripts/               # Cross-platform start/stop scripts
 └── package.json           # Root scripts (dev, build, db)
 ```
 
@@ -113,21 +119,34 @@ voynich-codex/
 - 📊 **Graph Views** — Visualización de grafos con ReactFlow para bestiario, personajes, geografía y magia
 
 ### 📝 Manuscript Management
-- 📚 **Manuscripts** — Biblioteca de manuscritos
-- 📄 **Chapters** — Capítulos con estado de publicación
+- 📚 **Manuscripts** — Biblioteca de manuscritos con portada, sinopsis y estadísticas
+- 📄 **Chapters** — Capítulos con editor de texto, portada individual y estado de publicación
+- 🔗 **Chapter Relations** — Relaciona fragmentos de texto con elementos del mundo (personajes, bestias, lugares, etc.) con 12 tipos de simulador
 - 📊 **Statistics** — Estadísticas de escritura
 - 🔍 **Vector Search** — Búsqueda semántica con Qdrant
+- 📝 **Writing Page** — Editor de escritura con sidebar de capítulos, selección de texto y panel de relaciones
+- 📖 **Reading Page** — Vista de lectura con highlights de texto relacionado y modales con simuladores
+- 🖼️ **Cover Upload** — Subida de imágenes de portada para manuscritos y capítulos (drag & drop + click)
 
 ### 🎯 Project Management
-- 📋 **Kanban Board** — Tablero de tareas estilo Kanban
+- 📋 **Kanban Board** — Tablero de tareas estilo Kanban con drag & drop (@dnd-kit)
+- 📅 **Calendar View** — Vista mensual de tareas con navegación y sidebar de tareas pendientes/vencidas
+- 📊 **Gantt View** — Diagrama de Gantt con zoom, escala de tiempo, línea de hoy y barras de progreso
 - 🏃 **Sprints** — Gestión de sprints de escritura
 - 🎯 **Milestones** — Hitos y objetivos
+- 📢 **Publication System** — Control de visibilidad (Privado/No listado/Público), estados de publicación (Borrador/En Revisión/Publicado/Archivado), enlaces de compartición
+- 🎨 **Covers & Layout** — Gestión de portadas de manuscrito y capítulos con subida de imágenes
+
+### 🧪 Testing
+- **Vitest** — Suite de pruebas con 17 tests para controllers (auth, world, manuscript, task)
 
 ### 🎨 UI/UX
 - 🌓 **Theme System** — Modos Day/Night/Sepia
 - 🔐 **Auth** — Login, Registro, JWT tokens
 - 📱 **Responsive** — Diseño adaptable
 - ✨ **Animations** — Framer Motion transitions
+- 🧩 **Component Library** — Modal, Select, Badge, Dropdown, EmptyState, Toast, ErrorBoundary
+- 🛡️ **Error Boundary** — Manejo de errores globales en la UI
 
 ---
 
@@ -230,7 +249,34 @@ Esto inicia automáticamente:
 | `GET` | `/api/manuscripts/:id/chapters` | Listar capítulos |
 | `POST` | `/api/manuscripts/:id/chapters` | Crear capítulo |
 | `PUT` | `/api/manuscripts/:mId/chapters/:cId` | Actualizar capítulo |
+| `DELETE` | `/api/manuscripts/:mId/chapters/:cId` | Eliminar capítulo |
 | `POST` | `/api/manuscripts/:mId/chapters/:cId/publish` | Publicar capítulo |
+| `POST` | `/api/manuscripts/:mId/chapters/:cId/unpublish` | Despublicar capítulo |
+
+### 🔗 Chapter Relations
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/api/chapters/:id/relations` | Listar relaciones del capítulo |
+| `POST` | `/api/chapters/:id/relations` | Crear relación (texto → elemento del mundo) |
+| `DELETE` | `/api/relations/:id` | Eliminar relación |
+
+### 🖼️ Upload
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `POST` | `/api/upload` | Subir imagen (max 5MB) |
+| `POST` | `/api/upload/multiple` | Subir múltiples imágenes (max 10) |
+
+### 📊 Tasks & Sprints
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/api/manuscripts/:id/tasks` | Listar tareas |
+| `POST` | `/api/manuscripts/:id/tasks` | Crear tarea |
+| `PUT` | `/api/tasks/:id` | Actualizar tarea |
+| `DELETE` | `/api/tasks/:id` | Eliminar tarea |
+| `GET` | `/api/manuscripts/:id/sprints` | Listar sprints |
+| `POST` | `/api/manuscripts/:id/sprints` | Crear sprint |
+| `GET` | `/api/manuscripts/:id/milestones` | Listar milestones |
+| `POST` | `/api/manuscripts/:id/milestones` | Crear milestone |
 
 ---
 
@@ -291,6 +337,9 @@ RATE_LIMIT_MAX_REQUESTS=100
 - **bcrypt** — Password hashing
 - **cors** — Cross-origin resource sharing
 - **dotenv** — Environment variables
+- **multer** — File upload handling
+- **helmet** — Security headers
+- **express-rate-limit** — Rate limiting
 
 ### Frontend
 - **react** — UI library
@@ -299,6 +348,9 @@ RATE_LIMIT_MAX_REQUESTS=100
 - **tailwindcss** — Utility-first CSS
 - **framer-motion** — Animations
 - **axios** — HTTP client
+- **@dnd-kit/core** — Drag and drop for Kanban board
+- **reactflow** — Graph visualization for world elements
+- **lucide-react** — Icon library
 
 ### Gateway
 - **http-proxy-middleware** — Reverse proxy
@@ -325,7 +377,7 @@ MIT License - Ver [LICENSE](LICENSE) para más detalles.
 
 ```
 > status  : ONLINE
-> stack   : React · Express · PostgreSQL · Qdrant · n8n · Docker
+> stack   : React · Express · PostgreSQL · Qdrant · n8n · Docker · Vitest · @dnd-kit · ReactFlow
 > purpose : World-building & Manuscript Management
 ```
 

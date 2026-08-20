@@ -1,4 +1,4 @@
-import { prisma } from '../../index';
+import prisma from '../../infrastructure/database/prisma/client';
 import { AppError } from './errorHandler';
 
 export async function requireWorldMember(worldId: string, userId: string | undefined, roles?: string[]): Promise<any> {

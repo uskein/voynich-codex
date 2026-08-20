@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { LayoutDashboard, Calendar, GanttChart, Search } from 'lucide-react';
 import { KanbanBoard, type Task, type TaskStatus } from '../../components/projects/kanban/KanbanBoard';
 import { TaskDetailModal } from '../../components/projects/task/TaskDetailModal';
+import { CalendarView } from '../../components/projects/calendar/CalendarView';
+import { GanttView } from '../../components/projects/gantt/GanttView';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -173,17 +175,15 @@ export function ProjectsPage() {
             onTaskClick={(task) => { setSelectedTask(task); setIsModalOpen(true); }}
           />
         ) : viewMode === 'calendar' ? (
-          <Card className="h-full">
-            <CardContent className="flex items-center justify-center h-64">
-              <p className="text-parchment-400">Calendar view coming soon</p>
-            </CardContent>
-          </Card>
+          <CalendarView
+            tasks={filteredTasks}
+            onTaskClick={(task) => { setSelectedTask(task); setIsModalOpen(true); }}
+          />
         ) : (
-          <Card className="h-full">
-            <CardContent className="flex items-center justify-center h-64">
-              <p className="text-parchment-400">Gantt chart coming soon</p>
-            </CardContent>
-          </Card>
+          <GanttView
+            tasks={filteredTasks}
+            onTaskClick={(task) => { setSelectedTask(task); setIsModalOpen(true); }}
+          />
         )}
       </div>
 
@@ -199,3 +199,5 @@ export function ProjectsPage() {
     </div>
   );
 }
+
+export default ProjectsPage;

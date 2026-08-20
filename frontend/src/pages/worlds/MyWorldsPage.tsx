@@ -133,3 +133,5 @@ export function MyWorldsPage() {
     </div>
   );
 }
+
+export default MyWorldsPage;

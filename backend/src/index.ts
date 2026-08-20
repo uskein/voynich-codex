@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { PrismaClient } from '@prisma/client';
+import prisma from './infrastructure/database/prisma/client';
 import authRoutes from './presentation/controllers/AuthController';
 import userRoutes from './presentation/controllers/UserController';
 import worldRoutes from './presentation/controllers/WorldController';
@@ -21,13 +21,16 @@ import magicRoutes from './presentation/controllers/MagicController';
 import notificationRoutes from './presentation/controllers/NotificationController';
 import statsRoutes from './presentation/controllers/StatsController';
 import heraldryRoutes from './presentation/controllers/HeraldryController';
+import chapterRelationRoutes from './presentation/controllers/ChapterRelationController';
+import uploadRoutes from './presentation/controllers/UploadController';
 import { errorHandler } from './presentation/middlewares/errorHandler';
 import { setupQdrantCollection } from './infrastructure/vector/qdrant.service';
+import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-export const prisma = new PrismaClient();
+export { prisma };
 
 app.use(helmet());
 app.use(cors({
@@ -37,8 +40,8 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+  windowMs: 15 * 60 * 1000,
+  max: 500,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
@@ -75,6 +78,9 @@ app.use('/api/magic', magicRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/heraldry', heraldryRoutes);
+app.use('/api', chapterRelationRoutes);
+app.use('/api', uploadRoutes);
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use(errorHandler);
 

@@ -160,3 +160,5 @@ export function CreateManuscriptPage() {
     </div>
   );
 }
+
+export default CreateManuscriptPage;

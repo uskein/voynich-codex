@@ -5,9 +5,11 @@ interface User {
   id: string;
   email: string;
   name: string;
+  username?: string;
   avatarUrl?: string;
   bio?: string;
-  role: string;
+  systemRole: 'GRAN_ESCRIBA' | 'ARCHIVERO' | 'CURADOR' | 'USER';
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 }
 
 interface AuthState {

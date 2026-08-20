@@ -76,6 +76,14 @@ export const chapterAPI = {
   unpublish: (manuscriptId: string, id: string) => api.post(`/manuscripts/${manuscriptId}/chapters/${id}/unpublish`)
 };
 
+export const chapterRelationAPI = {
+  list: (chapterId: string) => api.get(`/chapters/${chapterId}/relations`),
+  create: (chapterId: string, data: any) => api.post(`/chapters/${chapterId}/relations`, data),
+  update: (id: string, data: any) => api.put(`/relations/${id}`, data),
+  delete: (id: string) => api.delete(`/relations/${id}`),
+  getWorldElements: (worldId: string) => api.get(`/worlds/${worldId}/elements`)
+};
+
 export const taskAPI = {
   list: (manuscriptId: string, params?: any) => api.get(`/manuscripts/${manuscriptId}/tasks`, { params }),
   get: (manuscriptId: string, id: string) => api.get(`/manuscripts/${manuscriptId}/tasks/${id}`),
@@ -130,6 +138,8 @@ export const geographyAPI = {
   // Seas
   listSeas: (worldId: string) => api.get(`/geography/seas/world/${worldId}`),
   createSea: (data: any) => api.post('/geography/seas', data),
+  updateSea: (id: string, data: any) => api.put(`/geography/seas/${id}`, data),
+  deleteSea: (id: string) => api.delete(`/geography/seas/${id}`),
   // Regions
   listRegions: (worldId: string) => api.get(`/geography/regions/world/${worldId}`),
   createRegion: (data: any) => api.post('/geography/regions', data),
@@ -185,4 +195,17 @@ export const lawsAPI = {
   create: (data: any) => api.post('/laws', data),
   update: (id: string, data: any) => api.put(`/laws/${id}`, data),
   delete: (id: string) => api.delete(`/laws/${id}`)
+};
+
+export const uploadAPI = {
+  file: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  multiple: (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    return api.post('/upload/multiple', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  }
 };

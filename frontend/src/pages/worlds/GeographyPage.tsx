@@ -182,8 +182,9 @@ export function GeographyPage() {
           description: formDescription || undefined,
           tone: formTone
         };
-        // Seas don't have update endpoint in current API, but we can add
-        if (!editingItem) {
+        if (editingItem) {
+          await geographyAPI.updateSea(editingItem.id, payload);
+        } else {
           await geographyAPI.createSea(payload);
         }
       } else if (modalType === 'map') {
@@ -224,6 +225,8 @@ export function GeographyPage() {
     try {
       if (type === 'continent') {
         await geographyAPI.deleteContinent(id);
+      } else if (type === 'sea') {
+        await geographyAPI.deleteSea(id);
       } else if (type === 'map') {
         await geographyAPI.deleteMap(id);
       }
@@ -542,11 +545,9 @@ export function GeographyPage() {
                     <Button size="sm" variant="ghost" onClick={() => openEditModal(selectedEntity.type, selectedEntity.data)}>
                       <Edit2 className="w-3 h-3 mr-1" /> {t('common.edit')}
                     </Button>
-                    {selectedEntity.type !== 'sea' && (
-                      <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300" onClick={() => { handleDelete(selectedEntity.type, selectedEntity.data.id); setSelectedEntity(null); }}>
-                        <Trash2 className="w-3 h-3 mr-1" /> {t('common.delete')}
-                      </Button>
-                    )}
+                    <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300" onClick={() => { handleDelete(selectedEntity.type, selectedEntity.data.id); setSelectedEntity(null); }}>
+                      <Trash2 className="w-3 h-3 mr-1" /> {t('common.delete')}
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -565,33 +566,73 @@ export function GeographyPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Card variant="hover" className="h-full">
-                  <div className="aspect-[16/9] bg-midnight-700 rounded-t-xl overflow-hidden relative">
-                    <img src={map.imageUrl} alt={map.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <h3 className="font-serif font-bold text-white">{map.name}</h3>
-                      <p className="text-xs text-parchment-200">
+                <Card variant="hover" className="h-full overflow-hidden group">
+                  <div className="aspect-[16/9] bg-midnight-700 relative overflow-hidden">
+                    {map.imageUrl ? (
+                      <img src={map.imageUrl} alt={map.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Map className="w-12 h-12 text-midnight-500" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute top-2 left-2 flex gap-1.5">
+                      {map.tone && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-midnight-800/80 text-parchment-300 backdrop-blur-sm">
+                          {MAP_TONE_LABELS[map.tone] || map.tone}
+                        </span>
+                      )}
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-burnt-500/80 text-white backdrop-blur-sm">
                         {eras.find(e => e.value === map.era)?.label || map.era}
-                      </p>
+                      </span>
                     </div>
-                    <div className="absolute top-2 right-2 flex gap-1">
-                      <button onClick={() => setSelectedMap(map)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-midnight-700 text-parchment-300">
-                        <Eye className="w-3 h-3" />
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setSelectedMap(map)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-midnight-700 text-parchment-300 backdrop-blur-sm">
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => openEditModal('map', map)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-midnight-700 text-parchment-300">
-                        <Edit2 className="w-3 h-3" />
+                      <button onClick={() => openEditModal('map', map)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-midnight-700 text-parchment-300 backdrop-blur-sm">
+                        <Edit2 className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleDelete('map', map.id)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-red-500/80 text-parchment-300 hover:text-white">
-                        <Trash2 className="w-3 h-3" />
+                      <button onClick={() => handleDelete('map', map.id)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-red-500/80 text-parchment-300 hover:text-white backdrop-blur-sm">
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
+                    </div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <h3 className="font-serif font-bold text-white text-lg drop-shadow-lg">{map.name}</h3>
                     </div>
                   </div>
-                  <CardContent>
-                    <div className="flex items-center gap-2 text-xs text-parchment-500">
-                      {map.continent && <span>{map.continent.name}</span>}
-                      {map.sea && <span>{map.sea.name}</span>}
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {map.continent && (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">
+                          <Globe className="w-3 h-3" /> {map.continent.name}
+                        </span>
+                      )}
+                      {map.sea && (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
+                          <Waves className="w-3 h-3" /> {map.sea.name}
+                        </span>
+                      )}
                     </div>
+                    {(map.layers?.length > 0 || map.pointsOfInterest?.length > 0 || map.reliefs?.length > 0) && (
+                      <div className="flex items-center gap-3 text-[11px] text-parchment-500">
+                        {map.layers?.length > 0 && (
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-purple-400" /> {map.layers.length} layers
+                          </span>
+                        )}
+                        {map.pointsOfInterest?.length > 0 && (
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-yellow-400" /> {map.pointsOfInterest.length} POIs
+                          </span>
+                        )}
+                        {map.reliefs?.length > 0 && (
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-orange-400" /> {map.reliefs.length} reliefs
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -615,34 +656,72 @@ export function GeographyPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Card variant="hover" className="h-full">
-                  <CardContent>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-serif font-bold text-parchment-100">{continent.name}</h3>
-                        {continent.climate && <p className="text-sm text-parchment-400">{continent.climate}</p>}
-                      </div>
-                      <div className="flex gap-1">
-                        <button onClick={() => openEditModal('continent', continent)} className="p-1.5 rounded-lg hover:bg-midnight-700 text-parchment-400">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete('continent', continent.id)} className="p-1.5 rounded-lg hover:bg-red-500/20 text-parchment-400 hover:text-red-400">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                <Card variant="hover" className="h-full overflow-hidden">
+                  <div className="relative" style={{ height: 140 }}>
+                    <div className="absolute inset-0 overflow-hidden">
+                      <ContinentSimulator
+                        continent={{
+                          name: continent.name,
+                          description: continent.description,
+                          climate: continent.climate,
+                          tone: continent.tone
+                        }}
+                      />
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button onClick={() => openEditModal('continent', continent)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-midnight-700 text-parchment-300 backdrop-blur-sm">
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => handleDelete('continent', continent.id)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-red-500/80 text-parchment-300 hover:text-white backdrop-blur-sm">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <h3 className="font-serif font-bold text-parchment-100 text-lg">{continent.name}</h3>
+                      {continent.climate && (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-midnight-700 text-parchment-400 mt-1">
+                          <Globe className="w-3 h-3" /> {continent.climate}
+                        </span>
+                      )}
                     </div>
                     {continent.description && (
-                      <p className="text-xs text-parchment-400 line-clamp-2 mt-2">{continent.description}</p>
+                      <p className="text-sm text-parchment-400 line-clamp-2">{continent.description}</p>
                     )}
-                    <div className="flex items-center gap-4 mt-3 text-xs text-parchment-500">
-                      <span>{continent._count.regions} regions</span>
-                      <span>{continent._count.maps} maps</span>
+                    <div className="flex items-center gap-4 text-xs text-parchment-500">
+                      <span className="flex items-center gap-1">
+                        <Globe className="w-3 h-3" /> {continent._count.regions} regions
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Map className="w-3 h-3" /> {continent._count.maps} maps
+                      </span>
                     </div>
-                    {continent.maps.length > 0 && (
-                      <div className="flex gap-2 mt-3">
-                        {continent.maps.slice(0, 3).map(m => (
-                          <img key={m.id} src={m.imageUrl} alt={m.name} className="w-12 h-12 rounded object-cover" />
+                    {continent.regions.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {continent.regions.slice(0, 4).map(r => (
+                          <span key={r.id} className="text-[10px] px-1.5 py-0.5 rounded bg-midnight-700 text-parchment-500">{r.name}</span>
                         ))}
+                        {continent.regions.length > 4 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-midnight-700 text-parchment-500">+{continent.regions.length - 4}</span>
+                        )}
+                      </div>
+                    )}
+                    {continent.maps.length > 0 && (
+                      <div className="flex gap-2 pt-1">
+                        {continent.maps.slice(0, 3).map(m => (
+                          <div key={m.id} className="relative group">
+                            <img src={m.imageUrl} alt={m.name} className="w-14 h-14 rounded-lg object-cover border border-midnight-600" />
+                            <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Eye className="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                        ))}
+                        {continent.maps.length > 3 && (
+                          <div className="w-14 h-14 rounded-lg bg-midnight-700 flex items-center justify-center text-xs text-parchment-400">
+                            +{continent.maps.length - 3}
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -668,15 +747,62 @@ export function GeographyPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Card variant="hover" className="h-full">
-                  <CardContent>
-                    <h3 className="font-serif font-bold text-parchment-100">{sea.name}</h3>
-                    {sea.description && (
-                      <p className="text-xs text-parchment-400 line-clamp-2 mt-2">{sea.description}</p>
-                    )}
-                    <div className="mt-3 text-xs text-parchment-500">
-                      {sea._count.maps} maps
+                <Card variant="hover" className="h-full overflow-hidden">
+                  <div className="relative" style={{ height: 140 }}>
+                    <div className="absolute inset-0 overflow-hidden">
+                      <SeaSimulator
+                        sea={{
+                          name: sea.name,
+                          description: sea.description,
+                          tone: sea.tone
+                        }}
+                      />
                     </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button onClick={() => openEditModal('sea', sea)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-midnight-700 text-parchment-300 backdrop-blur-sm">
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => handleDelete('sea', sea.id)} className="p-1.5 bg-midnight-800/80 rounded-lg hover:bg-red-500/80 text-parchment-300 hover:text-white backdrop-blur-sm">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {sea.tone && (
+                      <div className="absolute top-2 left-2">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-midnight-800/80 text-parchment-300 backdrop-blur-sm">
+                          {TONE_LABELS[sea.tone] || sea.tone}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <h3 className="font-serif font-bold text-parchment-100 text-lg">{sea.name}</h3>
+                    </div>
+                    {sea.description && (
+                      <p className="text-sm text-parchment-400 line-clamp-2">{sea.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-xs text-parchment-500">
+                      <span className="flex items-center gap-1">
+                        <Map className="w-3 h-3" /> {sea._count.maps} maps
+                      </span>
+                    </div>
+                    {sea.maps.length > 0 && (
+                      <div className="flex gap-2 pt-1">
+                        {sea.maps.slice(0, 3).map(m => (
+                          <div key={m.id} className="relative group">
+                            <img src={m.imageUrl} alt={m.name} className="w-14 h-14 rounded-lg object-cover border border-midnight-600" />
+                            <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Eye className="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                        ))}
+                        {sea.maps.length > 3 && (
+                          <div className="w-14 h-14 rounded-lg bg-midnight-700 flex items-center justify-center text-xs text-parchment-400">
+                            +{sea.maps.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -1079,3 +1205,5 @@ export function GeographyPage() {
     </div>
   );
 }
+
+export default GeographyPage;

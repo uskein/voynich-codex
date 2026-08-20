@@ -23,8 +23,7 @@ export function Layout() {
   const navigation = [
     { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('nav.myWorlds'), href: '/worlds', icon: Globe },
-    { name: t('nav.myManuscripts'), href: '/manuscripts', icon: FileText },
-    { name: t('nav.projects'), href: '/projects', icon: LayoutDashboard },
+    { name: t('nav.projects'), href: '/manuscripts', icon: FileText },
     { name: t('nav.library'), href: '/library', icon: BookOpen },
   ];
 

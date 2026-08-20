@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../index';
+import prisma from '../../infrastructure/database/prisma/client';
 import { authenticate } from '../middlewares/auth.middleware';
 import { AppError } from '../middlewares/errorHandler';
 import { requireManuscriptMember } from '../middlewares/access';
@@ -13,7 +13,7 @@ const createChapterSchema = z.object({
   genre: z.string().optional(),
   epigraph: z.string().optional(),
   content: z.string().optional().default(''),
-  coverImageUrl: z.string().url().optional()
+  coverImageUrl: z.string().optional()
 });
 
 const updateChapterSchema = z.object({
@@ -21,7 +21,7 @@ const updateChapterSchema = z.object({
   content: z.string().optional(),
   genre: z.string().optional(),
   epigraph: z.string().optional(),
-  coverImageUrl: z.string().url().optional()
+  coverImageUrl: z.string().optional()
 });
 
 async function getChapter(manuscriptId: string, chapterId: string) {

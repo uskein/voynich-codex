@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { prisma } from '../../index';
+import prisma from '../../infrastructure/database/prisma/client';
 import { authenticate } from '../middlewares/auth.middleware';
 import { AppError } from '../middlewares/errorHandler';
 
@@ -152,7 +152,7 @@ const updateManuscriptSchema = z.object({
   subtitle: z.string().optional(),
   author: z.string().optional(),
   genre: z.string().optional(),
-  coverImage: z.string().url().optional(),
+  coverImage: z.string().optional(),
   synopsis: z.string().optional(),
   visibility: z.enum(['PRIVATE', 'PUBLIC', 'UNLISTED']).optional(),
   status: z.enum(['BORRADOR', 'EN_REVISION', 'PUBLICADO', 'ARCHIVADO']).optional(),

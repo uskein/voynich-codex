@@ -793,3 +793,5 @@ function BestiaryContent() {
     </div>
   );
 }
+
+export default BestiaryPage;

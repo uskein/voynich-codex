@@ -714,3 +714,5 @@ function MagicFlow() {
     </div>
   );
 }
+
+export default MagicPage;

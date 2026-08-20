@@ -755,3 +755,5 @@ function CharactersFlow() {
     </div>
   );
 }
+
+export default CharactersPage;

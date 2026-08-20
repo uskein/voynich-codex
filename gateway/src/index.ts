@@ -15,7 +15,6 @@ const PORT = process.env.PORT || 4000;
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -25,7 +24,6 @@ app.use(helmet({
   }
 }));
 
-// CORS
 app.use(cors({
   origin: [FRONTEND_URL, 'http://localhost:5173'],
   credentials: true,
@@ -33,7 +31,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate limiting
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
@@ -43,29 +40,40 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Logging
 app.use(morgan('combined'));
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'gateway', timestamp: new Date().toISOString() });
+app.get('/health', async (_req, res) => {
+  try {
+    const backendHealth = await fetch(`${BACKEND_URL}/api/health`);
+    const backendOk = backendHealth.ok;
+    res.json({
+      status: backendOk ? 'ok' : 'degraded',
+      service: 'gateway',
+      backend: backendOk ? 'connected' : 'unavailable',
+      timestamp: new Date().toISOString()
+    });
+  } catch {
+    res.json({
+      status: 'degraded',
+      service: 'gateway',
+      backend: 'unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
-// Proxy to backend
 app.use('/api', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api': '/api' },
-  onProxyReq: (proxyReq, req, res) => {
+  onProxyReq: (proxyReq, req, _res) => {
     console.log(`[Gateway] ${req.method} ${req.url} -> ${BACKEND_URL}`);
   },
-  onError: (err, req, res) => {
+  onError: (err, _req, res) => {
     console.error('[Gateway] Proxy error:', err.message);
     (res as express.Response).status(502).json({ error: 'Backend service unavailable' });
   }
 }));
 
-// Start server
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 if (fs.existsSync(frontendDist)) {
   app.use(express.static(frontendDist));

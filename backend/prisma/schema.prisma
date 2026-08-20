@@ -59,6 +59,9 @@ model RefreshToken {
   ip        String?
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ============================================
@@ -110,6 +113,7 @@ model WorldMember {
   joinedAt DateTime  @default(now())
 
   @@unique([worldId, userId])
+  @@index([userId])
 }
 
 enum WorldRole {
@@ -158,6 +162,10 @@ model Manuscript {
   activityFeed      ProjectActivity[]
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
+
+  @@index([worldId])
+  @@index([createdBy])
+  @@index([status])
 }
 
 enum ManuscriptVisibility {
@@ -186,6 +194,7 @@ model ManuscriptMember {
   joinedAt         DateTime       @default(now())
 
   @@unique([manuscriptId, userId])
+  @@index([userId])
 }
 
 enum ManuscriptRole {
@@ -223,9 +232,14 @@ model Chapter {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  characters ChapterCharacter[]
-  events     TimelineEvent[]
-  tasks      Task[]
+  characters    ChapterCharacter[]
+  relations     ChapterRelation[]
+  events        TimelineEvent[]
+  tasks         Task[]
+
+  @@index([manuscriptId])
+  @@index([status])
+  @@index([isPublished])
 }
 
 enum ChapterStatus {
@@ -245,6 +259,41 @@ model ChapterCharacter {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
   @@unique([chapterId, characterId])
+}
+
+// ============================================
+// CHAPTER RELATIONS (words/paragraphs to world elements)
+// ============================================
+model ChapterRelation {
+  id            String           @id @default(uuid())
+  chapterId     String
+  chapter       Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  targetType    RelationTarget
+  targetId      String
+  startOffset   Int              // character offset in content where relation starts
+  endOffset     Int              // character offset where relation ends
+  selectedText  String?          @db.Text
+  label         String?          // custom label for the relation
+  createdAt     DateTime         @default(now())
+
+  @@index([chapterId])
+  @@index([targetType, targetId])
+  @@unique([chapterId, targetId, startOffset])
+}
+
+enum RelationTarget {
+  CHARACTER
+  BESTIARY
+  CONTINENT
+  SEA
+  REGION
+  MAP
+  NATION
+  MAGIC_SYSTEM
+  SPELL
+  LAW
+  HERALDRY
+  TIMELINE_EVENT
 }
 
 // ============================================
@@ -282,6 +331,12 @@ model Task {
   children     Task[]           @relation("TaskHierarchy")
   comments     TaskComment[]
   attachments  TaskAttachment[]
+
+  @@index([manuscriptId])
+  @@index([assigneeId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([sprintId])
 }
 
 enum TaskType {
@@ -317,6 +372,9 @@ model TaskComment {
   user      User     @relation(fields: [userId], references: [id])
   content   String   @db.Text
   createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 model TaskAttachment {
@@ -328,6 +386,8 @@ model TaskAttachment {
   fileSize   Int?
   uploadedBy String
   createdAt  DateTime @default(now())
+
+  @@index([taskId])
 }
 
 // ============================================
@@ -345,6 +405,9 @@ model Sprint {
   goal         String?
   tasks        Task[]
   createdAt    DateTime     @default(now())
+
+  @@index([manuscriptId])
+  @@index([status])
 }
 
 enum SprintStatus {
@@ -368,6 +431,9 @@ model Milestone {
   type         MilestoneType   @default(CUSTOM)
   completedAt  DateTime?
   createdAt    DateTime        @default(now())
+
+  @@index([manuscriptId])
+  @@index([status])
 }
 
 enum MilestoneStatus {
@@ -411,6 +477,11 @@ model BestiaryEntry {
   characters CharacterCreature[]
   events     EventRelation[]
   spells     Spell[]
+
+  @@index([worldId])
+  @@index([regionId])
+  @@index([species])
+  @@index([dangerLevel])
 }
 
 enum EntityType {
@@ -456,6 +527,10 @@ model Character {
   spells    Spell[]
   chapters  ChapterCharacter[]
   heraldry  HeraldryLink[]
+
+  @@index([worldId])
+  @@index([nationId])
+  @@index([regionId])
 }
 
 model CharacterCreature {
@@ -487,6 +562,10 @@ model TimelineEvent {
 
   relations EventRelation[]
   chapters  Chapter[]
+
+  @@index([worldId])
+  @@index([era])
+  @@index([importance])
 }
 
 model EventRelation {
@@ -501,6 +580,10 @@ model EventRelation {
   characterId     String?
   Nation          Nation?        @relation(fields: [nationId], references: [id])
   nationId        String?
+
+  @@index([eventId])
+  @@index([targetId])
+  @@index([targetType])
 }
 
 enum Era {
@@ -529,6 +612,8 @@ model Continent {
   regions            Region[]
   maps               Map[]
   nations            NationContinent[]
+
+  @@index([worldId])
 }
 
 model Sea {
@@ -540,6 +625,8 @@ model Sea {
   tradeRoutes String? @db.Text
   tone        String? @default("ocean")
   maps        Map[]
+
+  @@index([worldId])
 }
 
 model Region {
@@ -554,6 +641,9 @@ model Region {
   creatures   BestiaryEntry[]
   characters  Character[]
   nations     Nation[]
+
+  @@index([worldId])
+  @@index([continentId])
 }
 
 model Map {
@@ -569,6 +659,10 @@ model Map {
   seaId            String?
   sea              Sea?       @relation(fields: [seaId], references: [id])
   pointsOfInterest Json?
+
+  @@index([worldId])
+  @@index([continentId])
+  @@index([seaId])
 }
 
 // ============================================
@@ -594,6 +688,9 @@ model Nation {
   heraldry      HeraldryLink[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+
+  @@index([worldId])
+  @@index([regionId])
 }
 
 model NationContinent {
@@ -604,6 +701,7 @@ model NationContinent {
   continent   Continent @relation(fields: [continentId], references: [id], onDelete: Cascade)
 
   @@unique([nationId, continentId])
+  @@index([continentId])
 }
 
 // ============================================
@@ -619,6 +717,8 @@ model HeraldryItem {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   links       HeraldryLink[]
+
+  @@index([worldId])
 }
 
 model HeraldryLink {
@@ -629,6 +729,10 @@ model HeraldryLink {
   nation      Nation?      @relation(fields: [nationId], references: [id], onDelete: Cascade)
   characterId String?
   character   Character?   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([heraldryId])
+  @@index([nationId])
+  @@index([characterId])
 }
 
 // ============================================
@@ -647,6 +751,10 @@ model Law {
   affectedCaste Json?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+
+  @@index([worldId])
+  @@index([nationId])
+  @@index([status])
 }
 
 enum LawSeverity {
@@ -679,6 +787,9 @@ model MagicSystem {
   spells      Spell[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@index([worldId])
+  @@index([school])
 }
 
 model Spell {
@@ -698,6 +809,10 @@ model Spell {
   visual         Json?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  @@index([worldId])
+  @@index([systemId])
+  @@index([practitionerId])
 }
 
 enum MagicSchool {
@@ -725,6 +840,11 @@ model Notification {
   entity    String?
   entityId  String?
   createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([createdAt])
 }
 
 enum NotificationType {
@@ -762,6 +882,10 @@ model Review {
   type           ReviewType   @default(MARGEN)
   status         ReviewStatus @default(PENDIENTE)
   createdAt      DateTime     @default(now())
+
+  @@index([manuscriptId])
+  @@index([reviewerId])
+  @@index([status])
 }
 
 enum ReviewType {
@@ -789,6 +913,10 @@ model ProjectActivity {
   entityId     String
   details      Json?
   createdAt    DateTime   @default(now())
+
+  @@index([manuscriptId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 // ============================================
@@ -834,6 +962,9 @@ model Image {
   creature    BestiaryEntry? @relation(fields: [creatureId], references: [id], onDelete: Cascade)
   characterId String?
   character   Character?     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([creatureId])
+  @@index([characterId])
 }
 
 // ============================================
@@ -849,4 +980,9 @@ model ActivityLog {
   worldId   String?
   details   Json?
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([worldId])
+  @@index([createdAt])
 }

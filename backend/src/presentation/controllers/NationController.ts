@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
-import { prisma } from '../../index';
+import prisma from '../../infrastructure/database/prisma/client';
 import { authenticate } from '../middlewares/auth.middleware';
 import { requireWorldMember } from '../middlewares/access';
 import { AppError } from '../middlewares/errorHandler';

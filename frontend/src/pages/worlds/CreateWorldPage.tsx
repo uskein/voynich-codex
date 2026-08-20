@@ -245,3 +245,5 @@ export function CreateWorldPage() {
     </div>
   );
 }
+
+export default CreateWorldPage;

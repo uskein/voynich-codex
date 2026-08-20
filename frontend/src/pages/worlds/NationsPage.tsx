@@ -580,3 +580,5 @@ export function NationsPage() {
     </div>
   );
 }
+
+export default NationsPage;

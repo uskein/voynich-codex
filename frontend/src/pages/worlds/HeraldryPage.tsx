@@ -665,3 +665,5 @@ export function HeraldryPage() {
     </div>
   );
 }
+
+export default HeraldryPage;
